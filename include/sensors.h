@@ -8,7 +8,7 @@
 
 struct IMU_data {
   float acl_x, acl_y, acl_z;
-  float gyro_x, gryo_y, gyro_z;
+  float gyro_x, gyro_y, gyro_z;
 };
 
 struct THM_data {

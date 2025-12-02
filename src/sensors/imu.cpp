@@ -19,4 +19,19 @@ bool BMI_begin() {
   return false;
 }
 
+IMU_data BMI_process() {
+  IMU_data data;
+  
+  data.acl_x = accel.getAccelX_mss();
+  data.acl_y = accel.getAccelY_mss();
+  data.acl_z = accel.getAccelZ_mss();
+
+  data.gyro_x = accel.getGyroX_rads();
+  data.gyro_y = accel.getGyroY_rads();
+  data.gyro_z = accel.getGyroZ_rads();
+
+  return data;
+
+}
+
 
