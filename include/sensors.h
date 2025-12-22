@@ -11,13 +11,12 @@ struct IMU_data {
   float gyro_x, gyro_y, gyro_z;
 };
 
-struct THM_data {
-  float temp, humid;
-  float axis_x, axis_y, axis_z;
+struct BME_data {
+  float temp, humidity, pressure, altitude;
 };
 
 struct GPS_data {
-  int x, y;
+  float latitude, longitude;
 };
 
 #endif // SENSORS_H
