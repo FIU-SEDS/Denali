@@ -15,9 +15,8 @@
   Connect CIPO to MISO, COPI to MOSI, and SCK to SCK, on an Arduino.
   Connect CS to pin 4 on an Arduino.
 */
-
+#include <Arduino.h>
 #include <SPI.h>
-
 #include <SparkFun_MMC5983MA_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
 
 SFE_MMC5983MA myMag;
@@ -28,7 +27,7 @@ SFE_MMC5983MA myMag;
 // if confused, use this repo for source code of MMC598MA https://github.com/sparkfun/SparkFun_MMC5983MA_Magnetometer_Arduino_Library
 // this is to understand how to calibrate the magnetometer https://www.digikey.com/en/maker/projects/how-to-calibrate-a-magnetometer/50f6bc8f36454a03b664dca30cf33a8b
 
-
+//put in values you determined from calibration here
 //Hard-iron offsets
 double magOffsetX = 1234.5;
 double magOffsetY = -987.6;
@@ -39,6 +38,7 @@ double magScaleX = 1.02;
 double magScaleY = 0.98;
 double magScaleZ = 1.01;
 
+//
 int csPin = 4;
 
 void setup()
