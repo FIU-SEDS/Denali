@@ -15,10 +15,16 @@ struct BME_data {
   float temp, humidity, pressure, altitude;
 };
 
+struct MAG_data {
+  float heading;
+};
+
 
 struct GPS_data {
   float latitude, longitude;
 };
+
+
 
 extern BME_data bme_data;
 

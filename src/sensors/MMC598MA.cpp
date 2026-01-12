@@ -18,7 +18,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SparkFun_MMC5983MA_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
-
+#include <sensors.h>
 SFE_MMC5983MA myMag;
 //these are examples values - you must perform your own calibration
 // Hard-iron offsets (from calibration)
@@ -41,7 +41,7 @@ double magScaleZ = 1.01;
 //
 int csPin = 4;
 
-void setup()
+bool init_MMC()
 {
     Serial.begin(115200);
     Serial.println("MMC5983MA Example");
@@ -56,13 +56,14 @@ void setup()
         delay(500);
     }
 
+    
     Serial.println("MMC5983MA connected");
 
     myMag.softReset();
+    return true;
 }
 
-void loop()
-{
+void process_MMC(MAG_data &mag_data){
     uint32_t rawValueX = 0;
     uint32_t rawValueY = 0;
     uint32_t rawValueZ = 0;
@@ -111,6 +112,7 @@ void loop()
     heading += 180;
 
     Serial.print("Heading: ");
-    Serial.println(heading, 1);
+    Serial.println(mag_data.heading, 1);
     delay(100);
+    return;
 }
