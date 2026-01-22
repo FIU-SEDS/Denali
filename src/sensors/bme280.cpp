@@ -6,7 +6,7 @@ constexpr int8_t LOWER_TEMP_BOUND = -30; // degrees Celsius
 constexpr int8_t UPPER_TEMP_BOUND = 75; // degrees Celsius
 constexpr float PRESSURE_LOWER_BOUND = 300.0F; // in hPa
 constexpr float PRESSURE_UPPER_BOUND = 1100.0F; // in hPa
-constexpr uint8_t BME_CS = PB11; // stm32
+// constexpr uint8_t BME_CS = PB11; // stm32
 constexpr uint8_t BME_CHIP_ID = 0x60;
 constexpr float SEA_LEVEL_PRESSURE_HPA = 1013.25; // standard atmosphere
 constexpr float METERS_TO_FEET = 3.280839895;
@@ -23,7 +23,6 @@ bool is_device_connected() {
 }
 
 bool init_bme() {
-
   if (!bme.begin()) return false;
   if (!is_device_connected()) return false;
 
@@ -41,6 +40,31 @@ bool init_bme() {
   );
     
   return true;
+}
+
+void test_BME(BME_data &baro) {
+  baro.temp = bme.readTemperature(); // celcius
+  baro.humidity = bme.readHumidity(); // percentage
+  baro.pressure = bme.readPressure() / 100.0F; // from Pa to hPa 
+  baro.altitude = bme.readAltitude(SEA_LEVEL_PRESSURE_HPA) * METERS_TO_FEET; // in feet
+
+  Serial.print("Temperature = ");
+  Serial.print(baro.temp);
+  Serial.println(" °C");
+
+  Serial.print("Pressure = ");
+  Serial.print(baro.pressure);
+  Serial.println(" hPa");
+
+  Serial.print("Approx. Altitude = ");
+  Serial.print(baro.altitude);
+  Serial.println(" ft");
+
+  Serial.print("Humidity = ");
+  Serial.print(baro.humidity);
+  Serial.println(" %");
+
+  Serial.println();
 }
 
 bool process_bme(BME_data &baro) {

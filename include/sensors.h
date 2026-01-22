@@ -3,6 +3,7 @@
 
 #define CS_BMI088_GYRO 0
 #define CS_BMI088_ACCL 0 
+#define BME_CS 10
 
 // TEMPORARY CHIP SELECT DEFINES HERE FOR GIT CONVENIENCE. CHANGE LATER
 
@@ -18,5 +19,9 @@ struct BME_data {
 struct GPS_data {
   float latitude, longitude;
 };
+
+bool init_bme();
+void test_BME(BME_data &baro);
+bool process_bme(BME_data &baro);
 
 #endif // SENSORS_H
