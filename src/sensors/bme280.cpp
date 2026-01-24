@@ -13,8 +13,8 @@ constexpr float METERS_TO_FEET = 3.280839895;
 constexpr float MAX_EXPECTED_ALTITUDE_FT = 35000.0F;  // ~10 km
 constexpr float MIN_EXPECTED_ALTITUDE_FT = -500.0F;   // Allow some below ground level
 
-Adafruit_BME280 bme(BME_CS); // hardware SPI init
-//Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI init
+// Adafruit_BME280 bme(BME_CS); // hardware SPI init
+Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI init
 // Adafruit_BME280 bme
 
 // CHeck if BME is responding
