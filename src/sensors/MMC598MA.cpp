@@ -1,4 +1,3 @@
-// This is for Arduino IDE
 /*
   Compute magnetic heading over SPI from the MMC5983MA
   By: Nathan Seidle and Ricardo Ramos
@@ -13,33 +12,30 @@
 
   Hardware Connections:
   Connect CIPO to MISO, COPI to MOSI, and SCK to SCK, on an Arduino.
-  Connect CS to pin 4 on an Arduino.
+  please check your board's pinout for these connections.
+  orientation points to where its in the direction of the SCL pin on the MMC5983MA
 */
-#include <Arduino.h>
+
 #include <SPI.h>
-#include <SparkFun_MMC5983MA_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
 #include <sensors.h>
+
+#include <SparkFun_MMC5983MA_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
+
 SFE_MMC5983MA myMag;
-//these are examples values - you must perform your own calibration
-// Hard-iron offsets (from calibration)
-// if performing calibration, use https://www.pjrc.com/store/prop_shield.html and download 
-// the motionCal software to get hard-iron and soft-iron values
-// if confused, use this repo for source code of MMC598MA https://github.com/sparkfun/SparkFun_MMC5983MA_Magnetometer_Arduino_Library
-// this is to understand how to calibrate the magnetometer https://www.digikey.com/en/maker/projects/how-to-calibrate-a-magnetometer/50f6bc8f36454a03b664dca30cf33a8b
 
-//put in values you determined from calibration here
-//Hard-iron offsets
-double magOffsetX = 1234.5;
-double magOffsetY = -987.6;
-double magOffsetZ = 432.1;
+//chip select pin
+int csPin = 2;
 
-// Soft-iron scale factors
-double magScaleX = 1.02;
-double magScaleY = 0.98;
-double magScaleZ = 1.01;
+const double bx = 3687.323025;
+const double by = -27.369635;
+const double bz = 12356.759856;
 
-//
-int csPin = 4;
+const double Ainv[3][3] = {
+  { 0.006894, 0.000023, 0.000042 },
+  { 0.000023,  0.007292, -0.000001 },
+  { 0.000042, -0.000001,  0.006879 }
+};
+
 
 bool init_MMC()
 {
@@ -56,7 +52,6 @@ bool init_MMC()
         delay(500);
     }
 
-    
     Serial.println("MMC5983MA connected");
 
     myMag.softReset();
@@ -64,14 +59,23 @@ bool init_MMC()
 }
 
 void process_MMC(MAG_data &mag_data){
-    uint32_t rawValueX = 0;
+    //calibration values
+    const double bx = 3687.323025;
+    const double by = -27.369635;
+    const double bz = 12356.759856;
+
+const double Ainv[3][3] = {
+  { 0.006894, 0.000023, 0.000042 },
+  { 0.000023,  0.007292, -0.000001 },
+  { 0.000042, -0.000001,  0.006879 }
+};
+   uint32_t rawValueX = 0;
     uint32_t rawValueY = 0;
     uint32_t rawValueZ = 0;
     double scaledX = 0;
     double scaledY = 0;
     double scaledZ = 0;
     double heading = 0;
-
 
     // Read all three channels simultaneously
     myMag.getMeasurementXYZ(&rawValueX, &rawValueY, &rawValueZ);
@@ -82,25 +86,24 @@ void process_MMC(MAG_data &mag_data){
     // Please note: to properly correct and calibrate the X, Y and Z channels, you need to determine true
     // offsets (zero points) and scale factors (gains) for all three channels. Futher details can be found at:
     // https://thecavepearlproject.org/2015/05/22/calibrating-any-compass-or-accelerometer-for-arduino/
-    double x = (double)rawValueX - 131072.0;
-    double y = (double)rawValueY - 131072.0;
-    double z = (double)rawValueZ - 131072.0;
+    double x = (double)rawValueX - 131072.0 - bx;
+    double y = (double)rawValueY - 131072.0 - by;
+    double z = (double)rawValueZ - 131072.0 - bz;
 
-// Apply hard-iron offsets
-    x -= magOffsetX;
-    y -= magOffsetY;
-    z -= magOffsetZ;
+// Apply soft-iron / scale / misalignment correction
+    scaledX = Ainv[0][0]*x + Ainv[0][1]*y + Ainv[0][2]*z;
+    scaledY = Ainv[1][0]*x + Ainv[1][1]*y + Ainv[1][2]*z;
+    scaledZ = Ainv[2][0]*x + Ainv[2][1]*y + Ainv[2][2]*z;
 
-// Apply soft-iron scaling
-    x *= magScaleX;
-    y *= magScaleY;
-    z *= magScaleZ;
+  double norm = sqrt(
+    scaledX * scaledX +
+    scaledY * scaledY +
+    scaledZ * scaledZ
+);
 
-// Assign to scaled variables for heading math
-    scaledX = x;
-    scaledY = y;
-    scaledZ = z;
-
+    scaledX /= norm;
+    scaledY /= norm;
+    scaledZ /= norm;
     // Magnetic north is oriented with the Y axis
     // Convert the X and Y fields into heading using atan2 (Arc Tangent 2)
     heading = atan2(scaledX, 0 - scaledY);
