@@ -22,6 +22,16 @@
 #include <SparkFun_MMC5983MA_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
 
 SFE_MMC5983MA myMag;
+//calibration values
+    const double bx = 3687.323025;
+    const double by = -27.369635;
+    const double bz = 12356.759856;
+
+const double Ainv[3][3] = {
+  { 0.006894, 0.000023, 0.000042 },
+  { 0.000023,  0.007292, -0.000001 },
+  { 0.000042, -0.000001,  0.006879 }
+};
 
 //chip select pin
 int csPin = 2;
@@ -59,16 +69,7 @@ bool init_MMC()
 }
 
 void process_MMC(MAG_data &mag_data){
-    //calibration values
-    const double bx = 3687.323025;
-    const double by = -27.369635;
-    const double bz = 12356.759856;
 
-const double Ainv[3][3] = {
-  { 0.006894, 0.000023, 0.000042 },
-  { 0.000023,  0.007292, -0.000001 },
-  { 0.000042, -0.000001,  0.006879 }
-};
    uint32_t rawValueX = 0;
     uint32_t rawValueY = 0;
     uint32_t rawValueZ = 0;
