@@ -20,7 +20,7 @@ bool BMI_begin()
   return false;
 }
 
-IMU_data BMI_process()
+bool BMI_process(IMU_data &data) {
 {
   IMU_data data;
 
