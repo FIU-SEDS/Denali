@@ -1,21 +1,3 @@
-/*
-  Compute magnetic heading over SPI from the MMC5983MA
-  By: Nathan Seidle and Ricardo Ramos
-  SparkFun Electronics
-  Date: April 14th, 2022
-  License: SparkFun code, firmware, and software is released under the MIT License(http://opensource.org/licenses/MIT).
-
-  Feel like supporting our work? Buy a board from SparkFun!
-  https://www.sparkfun.com/products/19034
-
-  This example demonstrates how to compute a magnetic heading from the sensor over SPI
-
-  Hardware Connections:
-  Connect CIPO to MISO, COPI to MOSI, and SCK to SCK, on an Arduino.
-  please check your board's pinout for these connections.
-  orientation points to where its in the direction of the SCL pin on the MMC5983MA
-*/
-
 #include <SPI.h>
 #include <sensors.h>
 
@@ -47,7 +29,7 @@ const double Ainv[3][3] = {
 };
 
 
-bool init_MMC()
+bool MMC_begin()
 {
     Serial.begin(115200);
     Serial.println("MMC5983MA Example");
@@ -65,10 +47,10 @@ bool init_MMC()
     Serial.println("MMC5983MA connected");
 
     myMag.softReset();
-    return true;
+    return false;
 }
 
-void process_MMC(MAG_data &mag_data){
+bool MMC_process(MAG_data &mag_data){
 
    uint32_t rawValueX = 0;
     uint32_t rawValueY = 0;
@@ -118,5 +100,5 @@ void process_MMC(MAG_data &mag_data){
     Serial.print("Heading: ");
     Serial.println(mag_data.heading, 1);
     delay(100);
-    return;
+    return false;
 }
