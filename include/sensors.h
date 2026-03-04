@@ -1,7 +1,7 @@
 #ifndef SENSORS_H
 #define SENSORS_H
 
-#include <serial.h>
+#include "serial.h"
 
 #define CS_BMI088_GYRO 0
 #define CS_BMI088_ACCL 0 
@@ -20,6 +20,7 @@ struct BME_data {
 };
 
 struct MAG_data {
+  const sensor_ID ID = MAG_ID;
   float heading;
 };
 
@@ -28,5 +29,15 @@ struct GPS_data {
   const sensor_ID ID = GPS_ID;
   float latitude, longitude;
 };
+
+bool MMC_begin();
+bool MMC_process(MAG_data &mag_data);
+
+bool BMI_begin();
+bool BMI_process(IMU_data &data);
+
+bool BME_begin();
+bool BME_process(BME_data &baro);
+
 
 #endif // SENSORS_H

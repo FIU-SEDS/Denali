@@ -22,8 +22,7 @@ bool is_device_connected() {
   return (bme.sensorID() == BME_CHIP_ID);
 }
 
-bool init_bme() {
-
+bool BME_begin() {
   if (!bme.begin()) return false;
   if (!is_device_connected()) return false;
 
@@ -43,7 +42,7 @@ bool init_bme() {
   return true;
 }
 
-bool process_bme(BME_data &baro) {
+bool BME_process(BME_data &baro) {
   baro.temp = bme.readTemperature(); // celcius
   baro.humidity = bme.readHumidity(); // percentage
   baro.pressure = bme.readPressure() / 100.0F; // from Pa to hPa 
