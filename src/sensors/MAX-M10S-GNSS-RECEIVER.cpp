@@ -1,10 +1,3 @@
-#include <SparkFun_u-blox_GNSS_v3.h>
-#include <sfe_bus.h>
-#include <u-blox_Class_and_ID.h>
-#include <u-blox_GNSS.h>
-#include <u-blox_config_keys.h>
-#include <u-blox_external_typedefs.h>
-#include <u-blox_structs.h>
 
 /*
   Reading Position, Velocity and Time (PVT) via UBX binary commands
@@ -32,14 +25,14 @@
   If you don't have a platform with a Qwiic connection use the SparkFun Qwiic Breadboard Jumper (https://www.sparkfun.com/products/14425)
   Open the serial monitor at 115200 baud to see the output
 */
-
+#include "sensors.h"
 #include <Wire.h> //Needed for I2C to GNSS
+#include "SparkFun_u-blox_GNSS_Arduino_Library.h"
 
-#include <SparkFun_u-blox_GNSS_v3.h> //http://librarymanager/All#SparkFun_u-blox_GNSS_v3
 
 SFE_UBLOX_GNSS myGNSS; // SFE_UBLOX_GNSS uses I2C. For Serial or SPI, see Example2 and Example3
 
-void setup()
+bool GNSS_begin()
 {
   Serial.begin(115200);
   delay(1000); 
@@ -58,9 +51,10 @@ void setup()
   myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
   
   //myGNSS.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Optional: save (only) the communications port settings to flash and BBR
+  return true;
 }
 
-void loop()
+bool GNSS_process(GPS_data &gnss_data)
 {
   // Request (poll) the position, velocity and time (PVT) information.
   // The module only responds when a new position is available. Default is once per second.
@@ -74,19 +68,29 @@ void loop()
     Serial.print(F("SIV : "));
     Serial.println(myGNSS.getSIV());
     int32_t latitude = myGNSS.getLatitude();
+
+    gnss_data.latitude = latitude;
+
     Serial.print(F("Lat: "));
     Serial.print(latitude);
 
     int32_t longitude = myGNSS.getLongitude();
+
+    gnss_data.longitude = longitude;
+
     Serial.print(F(" Long: "));
     Serial.print(longitude);
     Serial.print(F(" (degrees * 10^-7)"));
 
-    int32_t altitude = myGNSS.getAltitudeMSL(); // Altitude above Mean Sea Level
+    int32_t altitude = myGNSS.getAltitudeMSL();
+    gnss_data.altitude = altitude;
+     // Altitude above Mean Sea Level
     Serial.print(F(" Alt: "));
     Serial.print(altitude);
     Serial.print(F(" (mm)"));
 
     Serial.println();
+    
   }
+  return true;
 }

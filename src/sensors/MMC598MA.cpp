@@ -1,8 +1,8 @@
 #include <SPI.h>
-#include <sensors.h>
+#include "sensors.h"
 
 #include <SparkFun_MMC5983MA_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
-
+ //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
 SFE_MMC5983MA myMag;
 //calibration values
     const double bx = 3687.323025;
@@ -17,16 +17,6 @@ const double Ainv[3][3] = {
 
 //chip select pin
 int csPin = 2;
-
-const double bx = 3687.323025;
-const double by = -27.369635;
-const double bz = 12356.759856;
-
-const double Ainv[3][3] = {
-  { 0.006894, 0.000023, 0.000042 },
-  { 0.000023,  0.007292, -0.000001 },
-  { 0.000042, -0.000001,  0.006879 }
-};
 
 
 bool MMC_begin()
