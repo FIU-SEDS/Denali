@@ -24,11 +24,14 @@ struct MAG_data {
   float heading;
 };
 
-
+//I added altitude to the struct for GPS data.
 struct GPS_data {
   const sensor_ID ID = GPS_ID;
-  float latitude, longitude;
+  float latitude, longitude, altitude;
 };
+// headers for GPS
+bool GNSS_begin();
+bool GNSS_process(GPS_data &gnss_data);
 
 bool MMC_begin();
 bool MMC_process(MAG_data &mag_data);
