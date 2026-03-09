@@ -7,9 +7,10 @@
 // bytes mean in sequence when doing any kind of IO (files, radio, in our case).
 
 typedef enum : uint8_t {
-  BME_ID, 
-  IMU_ID, 
-  GPS_ID
+  BME_ID = 0, 
+  IMU_ID = 1, 
+  GPS_ID = 2,
+  MAG_ID = 3
 } sensor_ID;
 
 #endif // SERIAL_H
