@@ -1,8 +1,9 @@
 #include <state_manager.h>
-#include <common_sensors.h>
+#include <sensors.h>
 #include <vector>
 #include <cstdint>
 #include <io.h>
+#include <sensors.h>
 #define ARRLEN(_x) ((sizeof(_x)) / (sizeof(_x[0])))
 
 
@@ -13,7 +14,8 @@ constexpr float LINEAR_ACCEL_Z_THRESHOLD = (G_FORCE_THRESHOLD * GRAVITY_TO_METER
 constexpr uint16_t ALTITUDE_THRESHOLD = 50;  // unit FEET
 
 // first rocket state
-rocket_state rocket = IDLE;                                                                    // tentative placement to not get any errors
+enum rocket_state previous_state = IDLE;
+//rocket_state rocket = IDLE;                                                                    // tentative placement to not get any errors
 
 constexpr uint8_t COAST_ITERARTIONS = 100;                                                     // this variables holds the amount of times that we will check that the rocket is sitll not accelerating to ensure that the rocket is in COAST stage
 constexpr uint8_t APOGEE_ITERATIONS = 10;                                                      // this variable holds the amount of times we will check that the rockets previous altitude is greater than its current one to determine that the rocket has indeed reached APOGEE stage
@@ -24,6 +26,8 @@ uint8_t coast_sample_count = 0;  // used to verify that the coast counter reache
 uint8_t apogee_sample_count = 0; // used to verify that the current altitude measurement in COAST stage is lower than the previous reading and repeated 5 times to ensure that the rocket is in apogee
 
 void log_state_change();
+
+rocket_state update_rocket_states(rocket_state state, GPS_data &gps_data, BME_data &bme_data, IMU_data &imu_data, MAG_data &mag_data);
 
 bool initialize_all_components()
 {
@@ -38,17 +42,17 @@ bool initialize_all_components()
       !power_on_lora_998() ||
       !power_on_storage())
   {
-    SCB_AIRCR = 0x05FA0004; // should reset teensy 4.1
+    //SCB_AIRCR = 0x05FA0004; // should reset teensy 4.1
   }
   else
   {
     //important
-    rocket = IDLE; // changes rocket state to IDLE from INIT
+    previous_state = IDLE; // changes previous state to IDLE from INIT
   }
 
   return true;
 }
-int 
+
 
 
 
@@ -125,49 +129,46 @@ bool run_priority_sensor(rocket_state rs)
 //*CHANGE THE GLOBAL SENSOR VALUE ARRAY TO THE ACTUAL SENSOR VALUES PROCESSED*
 //===============================================
 
-void update_rocket_states(rocket_state state)
+void current_sensor(){
+  //enum rocket_state previous_state = state;
+  enum rocket_state state;
+
+  GPS_data gps_data;
+  BME_data bme_data;
+  IMU_data imu_data;
+  MAG_data mag_data;
+
+  BMI_process(imu_data);
+  BME_process(bme_data);
+  GNSS_process(gps_data);   
+  MMC_process(mag_data);
+
+  state = update_rocket_states(state, gps_data, bme_data, imu_data, mag_data);
+
+}
+
+rocket_state update_rocket_states(rocket_state state, GPS_data gps_data, BME_data bme_data, IMU_data imu_data, MAG_data mag_data)
 {
-//creation of objects to hold the sensor data
-GPS_data gps_data;
-BME_data bme_data;
-IMU_data imu_data;
-MAG_data mag_data;
-
- while(true){
-    //process the sensors and update the sensor values with the new values
-    BMI_process(imu_data);
-    BME_process(bme_data);
-    GNSS_process(gps_data);   
-    MMC_PROCESS(mag_data);
-
-    int16_t accel_z_current = imu_data.acl_z; // this is the current acceleration reading from the IMU sensor
-    float baro_current = bme_data.altitude; // this is the current altitude reading from the barometer sensor
-    double gps_current_log = gps_data.longitude; // this is the current altitude reading from the GPS sensor
-    double gps_current_lat = gps_data.latitude; // this is the current altitude reading from the GPS sensor
-    int16_t mag_current = mag_data.heading; // this is the current heading reading from the magnetometer sensor
-
-
-
     switch (state)
     {
     //start with IDLE on the state machine since the rocket will be in that state after initialization and then it will switch to BOOST once the rocket experiences 3 Gs or reaches 50 feet in altitude.
     case IDLE:
   
-        if (accel_z_current > LINEAR_ACCEL_Z_THRESHOLD || baro_current > ALTITUDE_THRESHOLD)
+        if (imu_data.acl_z > LINEAR_ACCEL_Z_THRESHOLD || bme_data.altitude > ALTITUDE_THRESHOLD)
         {
         return BOOST;
         }
      break;
 
     case BOOST:
-        if (accel_z_current < LINEAR_ACCEL_Z_THRESHOLD || baro_current > previous_altitude)
+        if (imu_data.acl_z < LINEAR_ACCEL_Z_THRESHOLD || bme_data.altitude > previous_altitude)
         {
         return BURNOUT;
         }
         break;
 
     case BURNOUT:
-        if (accel_z_current < LINEAR_ACCEL_Z_THRESHOLD)
+        if (imu_data.acl_z < LINEAR_ACCEL_Z_THRESHOLD)
         {
         coast_sample_count++;
         if (coast_sample_count >= COAST_ITERARTIONS)
@@ -183,7 +184,7 @@ MAG_data mag_data;
         break;
 
     case COAST:
-        if (baro_current < previous_altitude)
+        if (bme_data.altitude < previous_altitude)
         {
         apogee_sample_count++;
         if (apogee_sample_count >= APOGEE_ITERATIONS)
@@ -204,14 +205,14 @@ MAG_data mag_data;
         break;
 
     case DESCENT_DROGUE:
-        if (baro_current < MAIN_PARACHUTE_THRESHOLD)
+        if (bme_data.altitude < MAIN_PARACHUTE_THRESHOLD)
         {
         return DESCENT_MAIN;
         }
         break;
 
     case DESCENT_MAIN:
-        if (accel_z_current < LINEAR_ACCEL_Z_THRESHOLD || baro_current < ALTITUDE_THRESHOLD)
+        if (imu_data.acl_z < LINEAR_ACCEL_Z_THRESHOLD || bme_data.altitude < ALTITUDE_THRESHOLD)
         {
         return LANDED;
         }
@@ -223,9 +224,10 @@ MAG_data mag_data;
     default:
         break;
     }
-    previous_altitude = baro_current; // updates previous altitude for the next iteration
+    previous_altitude = bme_data.altitude; // updates previous altitude for the next iteration
     }
-}
+
+
 
 
 void log_state_change()
@@ -234,3 +236,4 @@ void log_state_change()
   transmit_data(b_arr, 2);
   store_data((unsigned char*) b_arr, 2);
 }
+
