@@ -1,6 +1,6 @@
 #include <SPI.h>
 #include <serial.h>
-#include "sensors.h"
+#include <sensors.h>
 #include <state_manager.h>
 
 void setup() {
@@ -20,6 +20,8 @@ void loop() {
   MAG_data md;
   IMU_data id;
   BME_data bd;
+  GPS_data gd;
+  rocket_state state;
 
   if(MMC_process(md) ||
      BMI_process(id) ||
@@ -33,8 +35,5 @@ void loop() {
   // and update_rocket_states_function.
 
   current_sensor(); // this will update the sensor data to the most recent values
-  update_rocket_states() //will determine the state of the rocket and return that state
-
-
-
+  update_rocket_states(state, gd, bd, id, md); // will determine the state of the rocket and return that state
 }

@@ -2,6 +2,7 @@
 #ifndef STATE_MANAGER_H
 #define STATE_MANAGER_H
 #include <cstdint>
+#include <sensors.h>
 
 enum axes : uint8_t
 {
@@ -35,7 +36,7 @@ extern enum rocket_state rocket;
 // State manager functions
 bool initialize_all_components(); // if one sensor's power on function returns false then it will reset the teensy 4.1
 
-rocket_state update_rocket_states(rocket_state state); // determines which state the rocket is in and returns that state=
+rocket_state update_rocket_states(rocket_state state, GPS_data &gps_data, BME_data &bme_data, IMU_data &imu_data, MAG_data &mag_data);
 
 void current_sensor(); // runs the current sensor's to update the object data to the most recent values
 

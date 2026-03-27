@@ -27,8 +27,6 @@ uint8_t apogee_sample_count = 0; // used to verify that the current altitude mea
 
 void log_state_change();
 
-rocket_state update_rocket_states(rocket_state state, GPS_data &gps_data, BME_data &bme_data, IMU_data &imu_data, MAG_data &mag_data);
-
 bool initialize_all_components()
 {
   if (!power_on_backup_IMU() ||
@@ -147,7 +145,7 @@ void current_sensor(){
 
 }
 
-rocket_state update_rocket_states(rocket_state state, GPS_data gps_data, BME_data bme_data, IMU_data imu_data, MAG_data mag_data)
+rocket_state update_rocket_states(rocket_state state, GPS_data &gps_data, BME_data &bme_data, IMU_data &imu_data, MAG_data &mag_data)
 {
     switch (state)
     {
@@ -225,6 +223,7 @@ rocket_state update_rocket_states(rocket_state state, GPS_data gps_data, BME_dat
         break;
     }
     previous_altitude = bme_data.altitude; // updates previous altitude for the next iteration
+    return state; // if no state change occurs, return the current state
     }
 
 
