@@ -14,7 +14,7 @@ constexpr float LINEAR_ACCEL_Z_THRESHOLD = (G_FORCE_THRESHOLD * GRAVITY_TO_METER
 constexpr uint16_t ALTITUDE_THRESHOLD = 50;  // unit FEET
 
 // first rocket state
-enum rocket_state previous_state = IDLE;
+enum rocket_state state = IDLE;
 //rocket_state rocket = IDLE;                                                                    // tentative placement to not get any errors
 
 constexpr uint8_t COAST_ITERARTIONS = 100;                                                     // this variables holds the amount of times that we will check that the rocket is sitll not accelerating to ensure that the rocket is in COAST stage
@@ -27,123 +27,10 @@ uint8_t apogee_sample_count = 0; // used to verify that the current altitude mea
 
 void log_state_change();
 
-bool initialize_all_components()
-{
-  if (!power_on_backup_IMU() ||
-      !power_on_main_IMU() ||
-      !power_on_backup_IMU() ||
-      !power_on_real_time_clock() ||
-      !power_on_magnetometer() ||
-      !power_on_barometer() ||
-      !power_on_temp_and_humidity() ||
-      // !power_on_GPS() ||
-      !power_on_lora_998() ||
-      !power_on_storage())
-  {
-    //SCB_AIRCR = 0x05FA0004; // should reset teensy 4.1
-  }
-  else
-  {
-    //important
-    previous_state = IDLE; // changes previous state to IDLE from INIT
-  }
-
-  return true;
-}
-
-
-
-
-
-/*
-static std::vector<bool (*)(void)> idle_prio = {process_barometer, process_IMUs};
-static std::vector<bool (*)(void)> boost_prio = {process_barometer, process_IMUs};
-static std::vector<bool (*)(void)> burnout_prio = {process_IMUs};
-static std::vector<bool (*)(void)> coast_prio = {process_barometer, process_IMUs};
-static std::vector<bool (*)(void)> apogee_prio = {process_barometer};
-static std::vector<bool (*)(void)> descent_prio = {process_barometer, process_IMUs}; // process_GPS here
-static std::vector<bool (*)(void)> landed_prio = {process_barometer, process_IMUs};                                 // process_GPS here
-
-static bool (*process_sensors[])(void) = {process_temp_and_humidity, process_barometer, process_IMUs, process_magnetometer};
-
-
-bool run_priority_sensor(rocket_state rs)
-{
-  static enum rocket_state old_state = IDLE;
-  static size_t main_idx = 0;
-  static size_t prio_idx = 0;
-  static std::vector<bool (*)(void)> &current_prio = idle_prio;
-
-  if (rs != old_state)
-  {
-    log_state_change();
-    prio_idx = 0;
-    switch (rs)
-    {
-    case INIT: // should be NO priority for INIT. This is just a holdover for there being an INIT rocket state, which there shouldn't be.
-    case IDLE:
-      current_prio = idle_prio;
-      break;
-    case BOOST:
-      current_prio = boost_prio;
-      break;
-    case BURNOUT:
-      current_prio = burnout_prio;
-      break;
-    case COAST:
-      current_prio = coast_prio;
-      break;
-    case APOGEE:
-      current_prio = apogee_prio;
-      break;
-    case DESCENT_MAIN:
-    case DESCENT_DROGUE:
-      current_prio = descent_prio;
-      break;
-    case LANDED:
-      current_prio = landed_prio;
-    }
-
-    if (main_idx % 2 != 0)
-    {
-      process_sensors[main_idx % ARRLEN(process_sensors)]();
-      main_idx++;
-    }
-    else
-    {
-      current_prio[prio_idx % current_prio.size()]();
-      if (current_prio.size() > prio_idx)
-        prio_idx++;
-      else
-        main_idx++;
-    }
-  }
-
-  return true; // placeholder for code compilation
-}
-*/
-
 //===============================================
 //*CHANGE THE GLOBAL SENSOR VALUE ARRAY TO THE ACTUAL SENSOR VALUES PROCESSED*
 //===============================================
 
-void current_sensor(){
-  //enum rocket_state previous_state = state;
-  enum rocket_state state;
-
-  GPS_data gps_data;
-  BME_data bme_data;
-  IMU_data imu_data;
-  MAG_data mag_data;
-
-  BMI_process(imu_data);
-  BME_process(bme_data);
-  GNSS_process(gps_data);   
-  MMC_process(mag_data);
-
-  state = update_rocket_states(state, gps_data, bme_data, imu_data, mag_data);
-
-}
 
 rocket_state update_rocket_states(rocket_state state, GPS_data &gps_data, BME_data &bme_data, IMU_data &imu_data, MAG_data &mag_data)
 {
