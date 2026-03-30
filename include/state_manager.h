@@ -24,6 +24,9 @@ enum sensors : uint8_t
   ROCKET_STATE
 };
 
+//temp for compile purposes of log state change
+extern enum rocket_state rocket;
+
 
 rocket_state update_rocket_states(rocket_state state, GPS_data &gps_data, BME_data &bme_data, IMU_data &imu_data, MAG_data &mag_data);
 
