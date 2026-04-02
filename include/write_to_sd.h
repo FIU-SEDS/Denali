@@ -8,15 +8,11 @@
 
 constexpr int CS_PIN = 0;
 
+File data;
+
 // global SD card object
 
 bool SD_begin();
-
-template <typename T>
-void write_to_sd(T t) {
-  auto bytes = get_serialized(t);
-  bytes.insert(t.begin(), t.id);
-}
 
 template <typename T>
 void write_to_sd(T obj) {
