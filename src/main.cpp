@@ -1,7 +1,7 @@
 #include <SPI.h>
-#include <serial>
-
-#include "sensors.h"
+#include <serial.h>
+#include <sensors.h>
+#include <state_manager.h>
 
 void setup() {
   Serial.begin(115200);
@@ -20,6 +20,8 @@ void loop() {
   MAG_data md;
   IMU_data id;
   BME_data bd;
+  GPS_data gd;
+  rocket_state state;
 
   if(MMC_process(md) ||
      BMI_process(id) ||
@@ -27,6 +29,5 @@ void loop() {
   {
     // an error has occured
   }
-
 
 }
